@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Load More Example</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 600px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .image {
+            width: calc(33.33% - 10px);
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .image img {
+            width: 100%;
+            border-radius: 5px;
+        }
+
+        /* button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    cursor: pointer;
+    background-color: ;
+} */
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            border: none;
+            margin-top: 20px;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: white;
+            color: #007bff;
+            border: 1px solid #007bff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Load More Content</h1>
+        <div id="content" class="content"></div>
+        <button id="loadMore">Load More</button>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            let currentPage = 1;
+            const itemsPerPage = 6; // Number of items to load per request
+
+            function fetchImages(page) {
+                $.ajax({
+                    url: `https://jsonplaceholder.typicode.com/photos?_page=${page}&_limit=${itemsPerPage}`,
+                    method: 'GET',
+                    success: function (data) {
+                        appendImages(data);
+                    },
+                    error: function () {
+                        alert('Error fetching data');
+                    }
+                });
+            }
+
+            function appendImages(images) {
+                images.forEach(image => {
+                    $('#content').append(`
+                <div class="image">
+                    <img src="${image.thumbnailUrl}" alt="${image.title}">
+                    <p>${image.title}</p>
+                </div>
+            `);
+                });
+            }
+
+            $('#loadMore').on('click', function () {
+                currentPage++;
+                fetchImages(currentPage);
+            });
+
+            // Initial load
+            fetchImages(currentPage);
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Q6</title>
+</head>
+
+<body>
+  <h1>User Data</h1>
+  <table id="userTable" border="1">
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Email</th>
+    </tr>
+  </table>
+  <script>
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", "https://jsonplaceholder.typicode.com/users", true);
+    xhr.onload = function () {
+      if (xhr.status == 200) {
+        const users = JSON.parse(xhr.responseText);
+        let table = document.getElementById("userTable");
+        users.forEach((user) => {
+          let row = table.insertRow();
+          let id = row.insertCell(0);
+          let name = row.insertCell(1);
+          let email = row.insertCell(2);
+          id.innerHTML = user.id;
+          name.innerHTML = user.name;
+          email.innerHTML = user.email;
+        });
+      }
+    };
+    xhr.send();
+  </script>
+</body>
+
+</html>

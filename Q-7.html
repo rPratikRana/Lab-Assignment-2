@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autocomplete Search</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e9ecef;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            margin: 100px auto;
+            text-align: center;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            padding-right: 60px;
+            position: relative;
+            /* For positioning suggestions */
+        }
+
+        h1 {
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 1em;
+            margin-bottom: 10px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #007BFF;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            outline: none;
+        }
+
+        .suggestions {
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            background: white;
+            position: relative;
+            width: calc(100% - 2px);
+            /* Adjust for border */
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            /* Hidden by default */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 5px;
+            /* Space between input and suggestions */
+        }
+
+        .suggestion-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .suggestion-item:hover {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        .suggestion-item strong {
+            display: block;
+            /* Makes title take up full width */
+            font-size: 1em;
+        }
+
+        .suggestion-item small {
+            color: #6c757d;
+            /* Lighter color for author name */
+            font-size: 0.9em;
+            /* Smaller font for author */
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 100%;
+                /* Full width on mobile */
+                padding: 20px;
+                /* Less padding on mobile */
+            }
+
+            h1 {
+                font-size: 1.8em;
+                /* Smaller heading on mobile */
+            }
+
+            input[type="text"] {
+                padding: 10px;
+                /* Adjust padding for mobile */
+            }
+        }
+
+        .loader {
+            display: none;
+            /* Initially hidden */
+            position: absolute;
+            /* Position relative to the input */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1em;
+            text-align: center;
+            /* Center spinner */
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 123, 255, 0.3);
+            border-top: 4px solid #007BFF;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            /* Animation for spinning */
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Book Search</h1>
+        <input type="text" id="search" placeholder="Search for a book...">
+        <div id="suggestions" class="suggestions"></div>
+    </div>
+    <div class="loader" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+
+    <script>
+        $(document).ready(function () {
+            let debounceTimer;
+            const $loader = $('.loader');
+
+            $('#search').on('input', function () {
+                clearTimeout(debounceTimer); // Clear the previous timer
+                const query = $(this).val();
+
+                if (query.length > 2) {
+                    debounceTimer = setTimeout(() => {
+                        fetchSuggestions(query);
+                    }, 300); // Adjust delay as needed (300ms is a common choice)
+                } else {
+                    $('#suggestions').hide(); // Hide suggestions if query is too short
+                }
+            });
+
+            function fetchSuggestions(query) {
+                $loader.show(); // Show loader
+                $.ajax({
+                    url: `https://openlibrary.org/search.json?q=${query}`,
+                    method: 'GET',
+                    success: function (data) {
+                        displaySuggestions(data.docs);
+                    },
+                    error: function () {
+                        console.error('Error fetching data');
+                    },
+                    complete: function () {
+                        $loader.hide(); // Hide loader after request is complete
+                    }
+                });
+            }
+
+            function displaySuggestions(books) {
+                $('#suggestions').empty(); // Clear previous suggestions
+                if (books.length) {
+                    $('#suggestions').show(); // Show suggestions if any
+                    books.forEach(book => {
+                        const title = book.title;
+                        const authors = book.author_name ? book.author_name.join(', ') : 'Unknown';
+                        $('#suggestions').append(`
+                    <div class="suggestion-item" data-title="${title}">
+                        <strong>${title}</strong><br>
+                        <small>by ${authors}</small>
+                    </div>
+                `);
+                    });
+                } else {
+                    $('#suggestions').hide(); // Hide if no results
+                }
+            }
+
+            // Handle suggestion click
+            $(document).on('click', '.suggestion-item', function () {
+                const title = $(this).data('title');
+                $('#search').val(title); // Set the input to the selected title
+                $('#suggestions').hide(); // Hide suggestions after selection
+            });
+
+            // Hide suggestions when clicking outside
+            $(document).click(function (event) {
+                if (!$(event.target).closest('#search').length) {
+                    $('#suggestions').hide(); // Hide suggestions if clicking outside
+                }
+            });
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q2</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+    integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+  <label for="state">Select state:</label>
+  <select name="" id="state">
+    <option value="">Select state:</option>
+    <option value="Gujarat">Gujarat</option>
+    <option value="Maharashtra">Maharashtra</option>
+    <option value="Rajasthan">Rajasthan</option>
+  </select>
+
+  <br /><br />
+
+  <label for="city">Select city:</label>
+  <select name="" id="city">
+    <option value="">Select city</option>
+  </select>
+</body>
+
+<script>
+  const cities = {
+    Gujarat: ["Surat", "Ahmedabad", "Navsari"],
+    Maharashtra: ["Mumbai", "Pune"],
+    Rajasthan: ["Jaipur", "Udaipur"],
+  };
+
+  const state = $("#state");
+  const city = $("#city");
+
+  $(document).ready(() => {
+    $("#state").change(() => {
+      const selectedState = state.val();
+      const city = $("#city");
+
+      city.html("<option>Select city</option>");
+
+      const citiesOfState = cities[selectedState];
+
+      citiesOfState.forEach((c) => {
+        const option = document.createElement("option");
+        option.value = c;
+        option.textContent = c;
+        city.append(option);
+      });
+    });
+  });
+</script>
+
+</html>
